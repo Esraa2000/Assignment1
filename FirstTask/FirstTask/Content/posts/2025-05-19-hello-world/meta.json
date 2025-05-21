@@ -1,0 +1,9 @@
+{
+  "title": "Hello World",
+  "description": "first post for my project",
+  "publishedDate": "2025-05-19T10:00:00",
+  "lastModified": "2025-05-19T10:00:00",
+  "tags": [ "programing", "selverkey" ],
+  "categories": [ "code" ],
+  "slug": "hello-world"
+}

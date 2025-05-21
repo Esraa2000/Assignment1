@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>File-Based Blog System - Simple UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        button {
+            margin: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        #posts article {
+            border-bottom: 1px solid #ccc;
+            padding: 10px 0;
+        }
+
+        #categories, #tags {
+            margin-top: 10px;
+        }
+
+        input[type="text"] {
+            padding: 6px;
+            width: 60%;
+        }
+    </style>
+</head>
+<body>
+    <h1>File-Based Blog System</h1>
+
+    <div>
+        <button onclick="loadCategories()">Show All Categories</button>
+        <button onclick="loadTags()">Show All Tags</button>
+        <button onclick="loadAllPosts()">Show All Posts</button>
+    </div>
+
+    <div id="categories"></div>
+    <div id="tags"></div>
+
+    <div style="margin-top: 20px;">
+        <input type="text" id="searchInput" placeholder="Search posts..." />
+        <button onclick="searchPosts()">Search</button>
+    </div>
+
+    <hr />
+
+    <div id="posts"></div>
+
+    <script>
+        function loadAllPosts() {
+            clearFilters();
+            fetch('/api/posts')
+                .then(res => res.json())
+                .then(posts => displayPosts(posts));
+        }
+
+        function loadCategories() {
+            clearFilters();
+            fetch('/api/categories')
+                .then(res => res.json())
+                .then(categories => {
+                    const container = document.getElementById('categories');
+                    container.innerHTML = categories.map(cat =>
+                        `<button onclick="filterByCategory('${encodeURIComponent(cat.name)}')">${cat.name}</button>`
+                    ).join('');
+                });
+        }
+
+        function loadTags() {
+            clearFilters();
+            fetch('/api/tags')
+                .then(res => res.json())
+                .then(tags => {
+                    const container = document.getElementById('tags');
+                    container.innerHTML = tags.map(tag =>
+                        `<button onclick="filterByTag('${tag.name}')">${tag.name}</button>`
+                    ).join('');
+                });
+        }
+
+
+        function clearFilters() {
+            document.getElementById('categories').innerHTML = '';
+            document.getElementById('tags').innerHTML = '';
+            document.getElementById('posts').innerHTML = '';
+            document.getElementById('searchInput').value = '';
+        }
+
+        function displayPosts(posts) {
+            const postsDiv = document.getElementById('posts');
+            if (!posts || posts.length === 0) {
+                postsDiv.innerHTML = '<p>No posts found.</p>';
+                return;
+            }
+            postsDiv.innerHTML = posts.map(post =>
+                `<article>
+            <h3>${post.title || post.Title}</h3>
+            <p>${post.content || post.Body || ''}</p>
+            <small>Published: ${post.publishedDate || post.PublishedDate || ''}</small>
+          </article>`
+            ).join('');
+        }
+
+        function filterByCategory(categoryName) {
+            fetch(`/api/posts/category/${encodeURIComponent(categoryName)}`)
+                .then(res => res.json())
+                .then(posts => displayPosts(posts));
+        }
+
+        function filterByTag(tagName) {
+            fetch(`/api/posts/tag/${encodeURIComponent(tagName)}`)
+                .then(res => res.json())
+                .then(posts => displayPosts(posts));
+        }
+
+        function searchPosts() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            if (!keyword) return;
+            fetch(`/api/search/${encodeURIComponent(keyword)}`)
+                .then(res => {
+                    if (!res.ok) {
+                        alert('No posts found');
+                        return [];
+                    }
+                    return res.json();
+                })
+                .then(posts => displayPosts(posts));
+        }
+
+        
+        loadAllPosts();
+    </script>
+
+</body>
+</html>
