@@ -5,21 +5,27 @@ namespace FirstTask.Endpoints
     public static class Category
     {
         public static void MapCategoryEndpoints(this WebApplication app)
-        {
-            app.MapGet("/api/categories", async () =>
-            {
-                var categoryPath = Path.Combine(Directory.GetCurrentDirectory(), "content", "categories");
+        { {
+     app.MapGet("/api/categories", GetAllCategories);
+ }
+ private static IResult GetAllCategories(HttpContext context)
+ {
+     var categoryPath = Path.Combine(Directory.GetCurrentDirectory(), "content", "categories");
 
-                if (!Directory.Exists(categoryPath))
-                    return Results.NotFound("Categories folder not found.");
+     if (!Directory.Exists(categoryPath))
+         return Results.NotFound("Categories folder not found.");
 
-                var categories = Directory.GetFiles(categoryPath, "*.json")
-                    .Select(file => JsonSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(file)))
-                    .Where(category => category != null)
-                    .ToList();
+     var categories = Directory.GetFiles(categoryPath, "*.json")
+         .Select(file =>
+         {
+             var json = File.ReadAllText(file);
+             return JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+         })
+         .Where(category => category != null)
+         .ToList();
 
-                return Results.Ok(categories);
-            });
+     return Results.Ok(categories);
+ }
         }
 
        
