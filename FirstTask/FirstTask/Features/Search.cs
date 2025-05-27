@@ -1,29 +1,39 @@
-﻿namespace FirstTask.Endpoints
+namespace FirstTask.Endpoints
 {
     public static class Search
     {
         public static void MapSearchEndpoints(this WebApplication app)
         {
-            app.MapGet("/api/search/{search}", async (string search) =>
+            app.MapGet("/api/search/{search}", HandleSearchRequest);
+        }
+
+        private static Task<IResult> HandleSearchRequest(string search)
+        {
+            if (string.IsNullOrWhiteSpace(search))
+                return Task.FromResult(Results.BadRequest("Search keyword is missing.") as IResult);
+
+            var posts = Post.GetAllPosts();
+            var keyword = search.ToLower();
+            var matchedPosts = new List<Dictionary<string, object>>();
+
+            foreach (var p in posts)
             {
-                var posts = await Task.FromResult(Post.GetAllPosts());
+                var title = p.ContainsKey("title") ? p["title"]?.ToString()?.ToLower() : "";
+                var description = p.ContainsKey("description") ? p["description"]?.ToString()?.ToLower() : "";
+                var content = p.ContainsKey("content") ? p["content"]?.ToString()?.ToLower() : "";
 
-                var keyword = search.ToLower();
-
-                var matchedPosts = posts.Where(p =>
+                if ((title != null && title.Contains(keyword)) ||
+                    (description != null && description.Contains(keyword)) ||
+                    (content != null && content.Contains(keyword)))
                 {
-                    var title = p.ContainsKey("title") ? p["title"]?.ToString()?.ToLower() : "";
-                    var description = p.ContainsKey("description") ? p["description"]?.ToString()?.ToLower() : "";
-                    var content = p.ContainsKey("content") ? p["content"]?.ToString()?.ToLower() : "";
+                    matchedPosts.Add(p);
+                }
+            }
 
-                    return title.Contains(keyword) || description.Contains(keyword) || content.Contains(keyword);
-                }).ToList();
+            if (matchedPosts.Count == 0)
+                return Task.FromResult(Results.NotFound("No posts matched the keyword") as IResult);
 
-                if (matchedPosts.Count == 0)
-                    return Results.NotFound("No posts matched the keyword");
-
-                return Results.Ok(matchedPosts);
-            });
+            return Task.FromResult(Results.Ok(matchedPosts) as IResult);
         }
     }
 }
