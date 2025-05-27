@@ -6,26 +6,30 @@ namespace FirstTask.Endpoints
     {
         public static void MapTagEndpoints(this WebApplication app)
         {
-            app.MapGet("/api/tags", HandleGetTagsAsync);
+            app.MapGet("/api/tags", () => HandleGetTagsAsync());
         }
 
-        private static async Task<IResult> HandleGetTagsAsync(HttpContext context)
+        private static Task<IResult> HandleGetTagsAsync()
         {
             var tagsPath = Path.Combine(Directory.GetCurrentDirectory(), "content", "tags");
 
             if (!Directory.Exists(tagsPath))
-                return Results.NotFound("Tags folder not found.");
+                return Task.FromResult(Results.NotFound("Tags folder not found.") as IResult);
 
-           
-            var tags = await Task.FromResult(
-                Directory.GetFiles(tagsPath, "*.json")
-                    .Select(file =>
-                        JsonSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(file)))
-                    .Where(tag => tag != null)
-                    .ToList()
-            );
+            var tagFiles = Directory.GetFiles(tagsPath, "*.json");
+            var tags = new List<Dictionary<string, object>>();
 
-            return Results.Ok(tags);
+            foreach (var file in tagFiles)
+            {
+                var content = File.ReadAllText(file);
+                var tag = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
+                if (tag != null)
+                {
+                    tags.Add(tag);
+                }
+            }
+
+            return Task.FromResult(Results.Ok(tags) as IResult);
         }
     }
 }
