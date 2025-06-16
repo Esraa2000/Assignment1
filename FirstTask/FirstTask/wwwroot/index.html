@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" Content="width=device-width, initial-scale=1" />
     <title>File-Based Blog System - Simple UI</title>
     <style>
         body {
@@ -26,9 +26,14 @@
             margin-top: 10px;
         }
 
-        input[type="text"] {
+        input[type="text"], textarea {
             padding: 6px;
-            width: 60%;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        #createStatus {
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -52,6 +57,25 @@
     <hr />
 
     <div id="posts"></div>
+
+    <hr />
+    <h2>Create New Post</h2>
+    <form id="createPostForm" onsubmit="createPost(event)">
+        <input type="text" id="title" placeholder="Title" required />
+        <textarea id="content" placeholder="Content" rows="5" required></textarea>
+        <input type="text" id="category" placeholder="Category (e.g. Tech)" />
+        <input type="text" id="tags" placeholder="Tags (comma separated)" />
+        <input type="text" id="description" placeholder="Description" />
+        
+
+        <label>
+            <input type="checkbox" id="published" checked />
+            Published
+        </label><br />
+
+        <button type="submit">Create Post</button>
+    </form>
+    <div id="createStatus"></div>
 
     <script>
         function loadAllPosts() {
@@ -85,7 +109,6 @@
                 });
         }
 
-
         function clearFilters() {
             document.getElementById('categories').innerHTML = '';
             document.getElementById('tags').innerHTML = '';
@@ -101,10 +124,10 @@
             }
             postsDiv.innerHTML = posts.map(post =>
                 `<article>
-            <h3>${post.title || post.Title}</h3>
-            <p>${post.content || post.Body || ''}</p>
-            <small>Published: ${post.publishedDate || post.PublishedDate || ''}</small>
-          </article>`
+                        <h3>${post.title || post.Title}</h3>
+                        <p>${post.Content || post.Content || ''}</p>
+                        <small>Published: ${post.publishedDate || post.PublishedDate || ''}</small>
+                    </article>`
             ).join('');
         }
 
@@ -134,9 +157,69 @@
                 .then(posts => displayPosts(posts));
         }
 
+        async function createPost(event) {
+
+
+            console.log("Title:", document.getElementById('title'));
+            console.log("Content:", document.getElementById('content'));
+            console.log("Value:", document.getElementById('content')?.value);
+
+            event.preventDefault();
+
+            const title = document.getElementById('title').value.trim();
+            const content = document.getElementById('content').value.trim();
+            const category = document.getElementById('category').value.trim();
+            const tags = document.getElementById('tags').value.trim().split(',').map(t => t.trim()).filter(t => t !== '');
+            const description = document.getElementById('description')?.value.trim();
+            
+
+            const statusDiv = document.getElementById('createStatus');
+
+            console.log("Trying to create post...");
+            console.log("Post data:", { title, content, category, tags });
+
+            if (!title || !content) {
+                alert('Title and Content are required.');
+                return;
+            }
+
+            const postData = {
+                title,
+                content,
+                category,
+                tags,
+                description,
+                publishedDate
+            };
+
+            try {
+                const response = await fetch(`${window.location.origin}/api/posts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                if (response.ok) {
+                    statusDiv.style.color = 'green';
+                    statusDiv.textContent = 'Post created successfully!';
+                    document.getElementById('createPostForm').reset();
+                    loadAllPosts(); 
+                } else {
+                    const errorText = await response.text();
+                    statusDiv.style.color = 'red';
+                    statusDiv.textContent = 'Failed to create post: ' + errorText;
+                }
+            } catch (err) {
+                statusDiv.style.color = 'red';
+                statusDiv.textContent = 'Error: ' + err.message;
+            }
+        }
+
+
         
         loadAllPosts();
     </script>
-
 </body>
 </html>
