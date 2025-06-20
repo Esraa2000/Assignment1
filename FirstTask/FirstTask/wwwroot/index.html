@@ -35,6 +35,12 @@
         #createStatus {
             margin-top: 10px;
         }
+
+        img {
+            margin: 15px 0;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
@@ -59,19 +65,38 @@
     <div id="posts"></div>
 
     <hr />
+
+    <div id="postDetails" style="display:none; margin-top: 30px;">
+        <button onclick="goBack()">← Back</button>
+        <h2 id="postTitle"></h2>
+        <img id="postImage" src="" alt="" style="max-width:100%; display:none;" />
+        <div id="postContent"></div>
+        <small id="postMeta"></small>
+    </div>
+
     <h2>Create New Post</h2>
-    <form id="createPostForm" onsubmit="createPost(event)">
-        <input type="text" id="title" placeholder="Title" required />
-        <textarea id="content" placeholder="Content" rows="5" required></textarea>
-        <input type="text" id="category" placeholder="Category (e.g. Tech)" />
-        <input type="text" id="tags" placeholder="Tags (comma separated)" />
+
+
+    <form id="createPostForm" enctype="multipart/form-data" onsubmit="createPost(event)">
+        <input type="text" id="title" name="title" placeholder="Title" required />
+        <textarea id="content" name="content" placeholder="Content" rows="5" required></textarea>
+        <input type="text" id="category" name="category" placeholder="Category (e.g. Tech)" />
+        <input type="text" id="tags" name="tags" placeholder="Tags (comma separated)" />
+        <input type="file" id="image" name="image" accept="image/*" />
+
         <label>
-            <input type="checkbox" id="published" checked />
+            <input type="checkbox" id="published" name="published" checked />
             Published
         </label><br />
         <button type="submit">Create Post</button>
     </form>
+
     <div id="createStatus"></div>
+
+    <hr />
+
+
+
 
     <script>
         function loadAllPosts() {
@@ -120,10 +145,10 @@
             }
             postsDiv.innerHTML = posts.map(post =>
                 `<article>
-                            <h3>${post.title || post.Title}</h3>
-                            <p>${post.Content || post.Content || ''}</p>
-                            <small>Published: ${post.publishedDate || post.PublishedDate || ''}</small>
-                        </article>`
+                                                    <h3 style="cursor:pointer;" onclick="showPost('${post.slug || post.Slug}')">${post.title || post.Title}</h3>
+                                                    <p>${post.Content || post.Content || ''}</p>
+                                                    <small>Published: ${post.publishedDate || post.PublishedDate || ''}</small>
+                                                </article>`
             ).join('');
         }
 
@@ -156,49 +181,26 @@
         async function createPost(event) {
             event.preventDefault();
 
-            const titleInput = document.getElementById('title');
-            const contentInput = document.getElementById('content');
-            const categoryInput = document.getElementById('category');
-            const tagsInput = document.getElementById('tags');
-            const publishedCheckbox = document.getElementById('published');
+            const form = document.getElementById('createPostForm');
             const statusDiv = document.getElementById('createStatus');
 
-            const title = titleInput?.value.trim() || '';
-            const content = contentInput?.value.trim() || '';
-            const category = categoryInput?.value.trim() || '';
-
-            let tags = [];
-            if (tagsInput && tagsInput.value) {
-                tags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t !== '');
+            const formData = new FormData(form);
+            const imageInput = document.getElementById('image');
+            if (imageInput && imageInput.files.length > 0) {
+                formData.append("image", imageInput.files[0]);
             }
-
-            const published = publishedCheckbox?.checked || false;
-
-            if (!title || !content) {
-                alert('Title and Content are required.');
-                return;
-            }
-
-            const postData = {
-                title,
-                content,
-                category,
-                tags,
-                published
-            };
 
             try {
                 const response = await fetch('/api/posts', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(postData)
+                    body: formData
                 });
 
                 if (response.ok) {
                     const result = await response.json();
                     statusDiv.style.color = 'green';
                     statusDiv.textContent = `✅ Post created successfully with slug: ${result.slug}`;
-                    document.getElementById('createPostForm').reset();
+                    form.reset();
                     loadAllPosts();
                 } else {
                     const errorText = await response.text();
@@ -212,8 +214,38 @@
             }
         }
 
+        function showPost(slug) {
+            fetch(`/api/posts/${slug}`)
+                .then(res => res.json())
+                .then(post => {
+                    document.getElementById('posts').style.display = 'none';
+                    document.getElementById('postDetails').style.display = 'block';
 
+                    document.getElementById('postTitle').textContent = post.title;
 
+                    if (post.image && post.image.trim() !== "") {
+                        const img = document.getElementById('postImage');
+                        img.src = post.image;
+                        img.style.display = 'block';
+                    } else {
+                        document.getElementById('postImage').style.display = 'none';
+                    }
+
+                    document.getElementById('postContent').innerHTML = post.content;
+
+                    const meta = `Published on ${post.publishedDate || ''} | Categories: ${(post.categories || []).join(', ')} | Tags: ${(post.tags || []).join(', ')}`;
+                    document.getElementById('postMeta').textContent = meta;
+                })
+                .catch(err => {
+                    alert("Error loading post");
+                    console.error(err);
+                });
+        }
+
+        function goBack() {
+            document.getElementById('postDetails').style.display = 'none';
+            document.getElementById('posts').style.display = 'block';
+        }
 
 
         loadAllPosts();
