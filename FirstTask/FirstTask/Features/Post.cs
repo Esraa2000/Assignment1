@@ -1,5 +1,7 @@
-using System.Text.Json;
 using Markdig;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using System.Text.Json;
 
 namespace FirstTask.Endpoints
 {
@@ -13,47 +15,117 @@ namespace FirstTask.Endpoints
             app.MapGet("/api/posts/{slug}", GetPostBySlugAsync);
             app.MapGet("/api/posts/category/{categoryName}", GetPostsByCategoryAsync);
             app.MapGet("/api/posts/tag/{tagName}", GetPostsByTagAsync);
-            app.MapPost("/api/posts", CreatePostAsync); 
+            app.MapPost("/api/posts", CreatePostAsync);
+            
         }
-
         public static async Task<IResult> CreatePostAsync(HttpRequest request)
         {
-
             try
             {
-                var postData = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(request.Body);
+                if (!request.HasFormContentType)
+                    return Results.BadRequest("Form content is required.");
 
-                if (postData == null || !postData.ContainsKey("title") || !postData.ContainsKey("Content"))
-                    return Results.BadRequest("Title and Content are required.");
+                var form = await request.ReadFormAsync();
 
-                var slug = postData["title"]?.ToString()?.ToLower()?.Replace(" ", "-");
-                if (string.IsNullOrWhiteSpace(slug))
-                    return Results.BadRequest("Invalid title.");
+                var title = form["title"].ToString();
+                var content = form["content"].ToString();
+                var category = form["category"].ToString();
+                var tags = form["tags"].ToString()
+                                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                .Select(t => t.Trim())
+                                .ToArray();
+                var published = form["published"].ToString().ToLower() == "true";
 
+                if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content))
+                    return Results.BadRequest("Title and content are required.");
+
+                var slug = title.ToLower().Replace(" ", "-");
                 var postFolder = Path.Combine(Directory.GetCurrentDirectory(), "Content", "posts", slug);
                 Directory.CreateDirectory(postFolder);
 
-                // Save meta.json
+                string? imagePath = null;
+                var file = form.Files["image"];
+                if (file != null && file.Length > 0)
+                {
+                    var assetsFolder = Path.Combine(postFolder, "assets");
+                    Directory.CreateDirectory(assetsFolder);
+
+                    var ext = Path.GetExtension(file.FileName);
+                    var fileName = $"{Guid.NewGuid()}{ext}";
+                    var filePath = Path.Combine(assetsFolder, fileName);
+
+                    
+                    using var image = await Image.LoadAsync(file.OpenReadStream());
+                    if (image.Width > 1024)
+                        image.Mutate(x => x.Resize(1024, 0));
+
+                    await image.SaveAsync(filePath);
+                    imagePath = $"/Content/posts/{slug}/assets/{fileName}";
+                }
+
+               
                 var metaData = new Dictionary<string, object>
                 {
-                    ["title"] = postData["title"],
+                    ["title"] = title,
                     ["slug"] = slug,
-                    ["description"] = postData.ContainsKey("description") ? postData["description"] : "",
-                    ["categories"] = postData.ContainsKey("category") ? new[] { postData["category"]?.ToString() } : [],
-                    ["tags"] = postData.ContainsKey("tags") && postData["tags"] is JsonElement tagsElem && tagsElem.ValueKind == JsonValueKind.Array
-                        ? tagsElem.EnumerateArray().Select(x => x.GetString()).Where(x => !string.IsNullOrEmpty(x)).ToArray()
-                        : [],
-                    ["publishedDate"] = postData.ContainsKey("publishedDate") ? postData["publishedDate"]?.ToString() : DateTime.UtcNow.ToString(),
-                    ["lastModified"] = DateTime.UtcNow.ToString(),
-                    ["status"] = postData.ContainsKey("published") && postData["published"]?.ToString()?.ToLower() == "true" ? "published" : "draft"
+                    ["description"] = form["description"].ToString() ?? "",
+                    ["categories"] = string.IsNullOrWhiteSpace(category) ? [] : new[] { category },
+                    ["tags"] = tags,
+                    ["publishedDate"] = DateTime.UtcNow.ToString("s"),
+                    ["lastModified"] = DateTime.UtcNow.ToString("s"),
+                    ["status"] = published ? "published" : "draft",
+                    ["image"] = imagePath ?? ""
                 };
 
                 var metaJson = JsonSerializer.Serialize(metaData, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(Path.Combine(postFolder, "meta.json"), metaJson);
 
-                // Save Content.md
-                var content = postData["content"]?.ToString() ?? "";
                 await File.WriteAllTextAsync(Path.Combine(postFolder, "content.md"), content);
+
+               
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    var categoryFolder = Path.Combine(Directory.GetCurrentDirectory(), "Content", "categories");
+                    Directory.CreateDirectory(categoryFolder);
+
+                    var catFileName = $"{category.ToLower().Replace(" ", "-")}.json";
+                    var categoryPath = Path.Combine(categoryFolder, catFileName);
+
+                    if (!File.Exists(categoryPath))
+                    {
+                        var categoryData = new Dictionary<string, string>
+                        {
+                            ["name"] = category,
+                            ["created"] = DateTime.UtcNow.ToString("s")
+                        };
+                        var categoryJson = JsonSerializer.Serialize(categoryData, new JsonSerializerOptions { WriteIndented = true });
+                        await File.WriteAllTextAsync(categoryPath, categoryJson);
+                    }
+                }
+
+             
+                if (tags.Length > 0)
+                {
+                    var tagsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Content", "tags");
+                    Directory.CreateDirectory(tagsFolder);
+
+                    foreach (var tag in tags)
+                    {
+                        var tagFileName = $"{tag.ToLower().Replace(" ", "-")}.json";
+                        var tagPath = Path.Combine(tagsFolder, tagFileName);
+
+                        if (!File.Exists(tagPath))
+                        {
+                            var tagData = new Dictionary<string, string>
+                            {
+                                ["name"] = tag,
+                                ["created"] = DateTime.UtcNow.ToString("s")
+                            };
+                            var tagJson = JsonSerializer.Serialize(tagData, new JsonSerializerOptions { WriteIndented = true });
+                            await File.WriteAllTextAsync(tagPath, tagJson);
+                        }
+                    }
+                }
 
                 return Results.Ok(new { message = "Post created successfully", slug = slug });
             }
@@ -63,6 +135,7 @@ namespace FirstTask.Endpoints
             }
         }
 
+       
 
         private static Dictionary<string, object>? ReadPost(string folder)
         {
