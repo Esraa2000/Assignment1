@@ -16,8 +16,103 @@ namespace FirstTask.Endpoints
             app.MapGet("/api/posts/category/{categoryName}", GetPostsByCategoryAsync);
             app.MapGet("/api/posts/tag/{tagName}", GetPostsByTagAsync);
             app.MapPost("/api/posts", CreatePostAsync);
-            
+            app.MapDelete("/api/posts/{slug}", DeletePostBySlugAsync);
+            app.MapPut("/api/posts/{slug}", UpdatePostAsync);
+
+
+
         }
+        public static async Task<IResult> UpdatePostAsync(string slug, HttpRequest request)
+        {
+            try
+            {
+                if (!request.HasFormContentType)
+                    return Results.BadRequest("Form content is required.");
+
+                var form = await request.ReadFormAsync();
+
+                var title = form["title"].ToString();
+                var content = form["content"].ToString();
+                var category = form["category"].ToString();
+                var tags = form["tags"].ToString()
+                                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                .Select(t => t.Trim())
+                                .ToArray();
+                var published = form["published"].ToString().ToLower() == "true";
+
+                var postFolder = Path.Combine(Directory.GetCurrentDirectory(), "Content", "posts", slug);
+                if (!Directory.Exists(postFolder))
+                    return Results.NotFound("Post not found.");
+
+                // تحديث meta.json
+                var metaPath = Path.Combine(postFolder, "meta.json");
+                if (!File.Exists(metaPath))
+                    return Results.NotFound("Post metadata not found.");
+
+                var meta = JsonSerializer.Deserialize<Dictionary<string, object>>(await File.ReadAllTextAsync(metaPath));
+                if (meta == null)
+                    return Results.BadRequest("Invalid metadata.");
+
+                meta["title"] = title;
+                meta["description"] = form["description"].ToString() ?? "";
+                meta["categories"] = string.IsNullOrWhiteSpace(category) ? [] : new[] { category };
+                meta["tags"] = tags;
+                meta["lastModified"] = DateTime.UtcNow.ToString("s");
+                meta["status"] = published ? "published" : "draft";
+
+                // تحديث الصورة لو فيه صورة جديدة
+                var file = form.Files["image"];
+                if (file != null && file.Length > 0)
+                {
+                    var assetsFolder = Path.Combine(postFolder, "assets");
+                    Directory.CreateDirectory(assetsFolder);
+
+                    var ext = Path.GetExtension(file.FileName);
+                    var fileName = $"{Guid.NewGuid()}{ext}";
+                    var filePath = Path.Combine(assetsFolder, fileName);
+
+                    using var image = await Image.LoadAsync(file.OpenReadStream());
+                    if (image.Width > 1024)
+                        image.Mutate(x => x.Resize(1024, 0));
+
+                    await image.SaveAsync(filePath);
+                    meta["image"] = $"/Content/posts/{slug}/assets/{fileName}";
+                }
+
+                // حفظ metadata
+                var metaJson = JsonSerializer.Serialize(meta, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(metaPath, metaJson);
+
+                // تحديث content.md
+                await File.WriteAllTextAsync(Path.Combine(postFolder, "content.md"), content);
+
+                return Results.Ok(new { message = "Post updated successfully", slug = slug });
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem("Error updating post: " + ex.Message);
+            }
+        }
+
+        public static async Task<IResult> DeletePostBySlugAsync(string slug)
+        {
+            try
+            {
+                var postFolder = Path.Combine(Directory.GetCurrentDirectory(), "Content", "posts", slug);
+
+                if (!Directory.Exists(postFolder))
+                    return Results.NotFound("Post not found.");
+
+                Directory.Delete(postFolder, recursive: true);
+
+                return Results.Ok(new { message = $"Post '{slug}' deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem("Error deleting post: " + ex.Message);
+            }
+        }
+
         public static async Task<IResult> CreatePostAsync(HttpRequest request)
         {
             try
