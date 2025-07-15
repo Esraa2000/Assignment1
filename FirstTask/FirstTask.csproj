@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<EnableDefaultContentItems>false</EnableDefaultContentItems>
+	</PropertyGroup>
+
+	<PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Content\posts\2025-05-19-hello-world2\**" />
+	  <Compile Remove="Content\posts\2025-05-19-hello-world\**" />
+	  <EmbeddedResource Remove="Content\posts\2025-05-19-hello-world2\**" />
+	  <EmbeddedResource Remove="Content\posts\2025-05-19-hello-world\**" />
+	  <None Remove="Content\posts\2025-05-19-hello-world2\**" />
+	  <None Remove="Content\posts\2025-05-19-hello-world\**" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Markdig" Version="0.41.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.10" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="content\categories\" />
+    <Folder Include="Content\posts\" />
+    <Folder Include="content\tags\" />
+    <Folder Include="content\users\" />
+  </ItemGroup>
+
+</Project>

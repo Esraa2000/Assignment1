@@ -1,0 +1,93 @@
+﻿<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blog Home</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 20px auto; }
+        input, button { margin: 5px 0; padding: 8px; width: 100%; }
+        #posts article { border-bottom: 1px solid #ccc; padding: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>📖 File-Based Blog System</h1>
+
+    <h2>Login</h2>
+    <form onsubmit="login(event)">
+        <input type="text" id="loginUsername" placeholder="Username" required />
+        <input type="password" id="loginPassword" placeholder="Password" required />
+        <button type="submit">Login</button>
+        <div id="loginStatus"></div>
+    </form>
+
+    <h2>Register</h2>
+    <form onsubmit="register(event)">
+        <input type="text" id="registerUsername" placeholder="Username" required />
+        <input type="password" id="registerPassword" placeholder="Password" required />
+        <button type="submit">Register</button>
+        <div id="registerStatus"></div>
+    </form>
+
+    <hr />
+
+    <h2>📜 All Posts</h2>
+    <div id="posts"></div>
+
+    <script>
+
+        async function login(event) {
+            event.preventDefault();
+            const username = document.getElementById("loginUsername").value;
+            const password = document.getElementById("loginPassword").value;
+
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+            const status = document.getElementById("loginStatus");
+
+            if (res.ok && data.token) {
+                localStorage.setItem("token", data.token);
+                window.location.href = "dashboard.html";
+            } else {
+                status.textContent = "❌ Login failed.";
+            }
+        }
+
+        async function register(event) {
+            event.preventDefault();
+            const username = document.getElementById("registerUsername").value;
+            const password = document.getElementById("registerPassword").value;
+
+            const res = await fetch('/api/users/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const status = document.getElementById("registerStatus");
+            const message = await res.text();
+            status.textContent = res.ok ? "✅ Registered successfully." : "❌ " + message;
+        }
+
+        async function loadAllPosts() {
+            const res = await fetch('/api/posts');
+            const posts = await res.json();
+
+            const postsDiv = document.getElementById("posts");
+            postsDiv.innerHTML = posts.map(post =>
+                `<article>
+                    <h3>${post.title}</h3>
+                    <p>${post.content}</p>
+                </article>`
+            ).join('');
+        }
+
+        window.onload = loadAllPosts;
+    </script>
+</body>
+</html>
