@@ -1,7 +1,7 @@
-﻿using Markdig;
+﻿using System.Text.Json;
+using Markdig;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using System.Text.Json;
 
 namespace FirstTask.Endpoints
 {
@@ -15,9 +15,20 @@ namespace FirstTask.Endpoints
             app.MapGet("/api/posts/{slug}", GetPostBySlugAsync);
             app.MapGet("/api/posts/category/{categoryName}", GetPostsByCategoryAsync);
             app.MapGet("/api/posts/tag/{tagName}", GetPostsByTagAsync);
-            app.MapPost("/api/posts", CreatePostAsync);
-            app.MapDelete("/api/posts/{slug}", DeletePostBySlugAsync);
-            app.MapPut("/api/posts/{slug}", UpdatePostAsync);
+            app.MapPost("/api/posts", CreatePostAsync)
+            .RequireAuthorization("Author")
+            .WithName("CreatePost").WithOpenApi();
+
+            app.MapDelete("/api/posts/{slug}", DeletePostBySlugAsync)
+                .RequireAuthorization("Author")
+                .WithName("DeletePost")
+                .WithOpenApi();
+
+            app.MapPut("/api/posts/{slug}", UpdatePostAsync)
+                .RequireAuthorization("Author")
+                .WithName("UpdatePost")
+                .WithOpenApi();
+
 
 
 

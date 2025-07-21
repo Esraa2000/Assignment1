@@ -21,11 +21,11 @@ builder.Services.AddAuthentication("Bearer")
             ValidateIssuerSigningKey = true,
             ValidIssuer = "your-app",
             ValidAudience = "your-app",
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SuperSecretKey123456!"))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SuperSecretKey1234567890!@#$%^&*()ABCDEF"))
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options => { options.AddPolicy("Author", policy => policy.RequireRole("Author")); });
  
 var app = builder.Build();
 
@@ -41,13 +41,13 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseAuthentication();
 app.UseAuthorization();
 
+
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapCategoryEndpoints();
 app.MapTagEndpoints();
 app.MapSearchEndpoints();
 app.MapPostEndpoints();
-
 
 
 

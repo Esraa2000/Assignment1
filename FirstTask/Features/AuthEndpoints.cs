@@ -38,6 +38,7 @@ namespace FirstTask.Features
             var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.Role,"Author")
         };
 
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
