@@ -8,7 +8,7 @@ using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
+var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
@@ -19,9 +19,9 @@ builder.Services.AddAuthentication("Bearer")
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "your-app",
-            ValidAudience = "your-app",
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SuperSecretKey1234567890!@#$%^&*()ABCDEF"))
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
         };
     });
 

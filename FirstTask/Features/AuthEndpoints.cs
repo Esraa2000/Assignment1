@@ -47,8 +47,8 @@ namespace FirstTask.Features
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "your-app",
-                audience: "your-app",
+                issuer: "Blog",
+                audience: "Blog",
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(2),
                 signingCredentials: creds);
