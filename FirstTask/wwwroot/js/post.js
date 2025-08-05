@@ -36,11 +36,11 @@
          });
  }
 
- function clearFilters() {
+function clearFilters() {
      document.getElementById('categories').innerHTML = '';
      document.getElementById('tags').innerHTML = '';
      document.getElementById('posts').innerHTML = '';
-     document.getElementById('searchInput').value = '';
+    /* document.getElementById('searchInput').value = '';*/
  }
 
  function displayPosts(posts) {
