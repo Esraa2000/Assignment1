@@ -13,25 +13,25 @@
  }
 
    function loadCategories() {
-      clearFilters();
+      
       fetch('/api/categories')
           .then(res => res.json())
           .then(categories => {
               const container = document.getElementById('categories');
               container.innerHTML = categories.map(cat =>
-                  `<button onclick="filterByCategory('${encodeURIComponent(cat.name)}')">${cat.name}</button>`
+                  `<button class="btn custom-btn smoothscroll me-2 mb-2" onclick="filterByCategory('${encodeURIComponent(cat.name)}')">${cat.name}</button>`
               ).join('');
           });
   }
 
  function loadTags() {
-     clearFilters();
+     
      fetch('/api/tags')
          .then(res => res.json())
          .then(tags => {
              const container = document.getElementById('tags');
              container.innerHTML = tags.map(tag =>
-                 `<button onclick="filterByTag('${tag.name}')">${tag.name}</button>`
+                 `<button class="btn custom-btn smoothscroll me-2 mb-2" onclick="filterByTag('${tag.name}')">${tag.name}</button>`
              ).join('');
          });
  }
@@ -58,32 +58,7 @@
      ).join('');
  }
 
- function filterByCategory(categoryName) {
-     fetch(`/api/posts/category/${encodeURIComponent(categoryName)}`)
-         .then(res => res.json())
-         .then(posts => displayPosts(posts));
- }
-
- function filterByTag(tagName) {
-     fetch(`/api/posts/tag/${encodeURIComponent(tagName)}`)
-         .then(res => res.json())
-         .then(posts => displayPosts(posts));
- }
-
- function searchPosts() {
-     const keyword = document.getElementById('searchInput').value.trim();
-     if (!keyword) return;
-     fetch(`/api/search/${encodeURIComponent(keyword)}`)
-         .then(res => {
-             if (!res.ok) {
-                 alert('No posts found');
-                 return [];
-             }
-             return res.json();
-         })
-         .then(posts => displayPosts(posts));
- }
-
+ 
  async function createPost(event) {
      if (!token) {
          alert("❌ Unauthorized! Please login first.");
