@@ -44,7 +44,7 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
-app.MapCategoryEndpoints();
+app.MapCategoryEndpoints(); 
 app.MapTagEndpoints();
 app.MapSearchEndpoints();
 app.MapPostEndpoints();

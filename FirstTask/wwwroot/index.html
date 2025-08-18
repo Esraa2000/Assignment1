@@ -1,93 +1,257 @@
-﻿<!-- index.html -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Blog Home</title>
-    <style>
-        body { font-family: Arial; max-width: 800px; margin: 20px auto; }
-        input, button { margin: 5px 0; padding: 8px; width: 100%; }
-        #posts article { border-bottom: 1px solid #ccc; padding: 10px 0; }
-    </style>
-</head>
-<body>
-    <h1>📖 File-Based Blog System</h1>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <h2>Login</h2>
-    <form onsubmit="login(event)">
-        <input type="text" id="loginUsername" placeholder="Username" required />
-        <input type="password" id="loginPassword" placeholder="Password" required />
-        <button type="submit">Login</button>
-        <div id="loginStatus"></div>
-    </form>
+        <meta name="description" content="">
+        <meta name="author" content="">
 
-    <h2>Register</h2>
-    <form onsubmit="register(event)">
-        <input type="text" id="registerUsername" placeholder="Username" required />
-        <input type="password" id="registerPassword" placeholder="Password" required />
-        <button type="submit">Register</button>
-        <div id="registerStatus"></div>
-    </form>
+        <title>Barista Cafe HTML CSS Template</title>
 
-    <hr />
+        <!-- CSS FILES -->                
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <h2>📜 All Posts</h2>
-    <div id="posts"></div>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,400;0,600;0,700;1,200;1,700&display=swap" rel="stylesheet">
+            
+        <link href="css/bootstrap.min.css" rel="stylesheet">
 
-    <script>
+        <link href="css/bootstrap-icons.css" rel="stylesheet">
 
-        async function login(event) {
-            event.preventDefault();
-            const username = document.getElementById("loginUsername").value;
-            const password = document.getElementById("loginPassword").value;
+        <link href="css/vegas.min.css" rel="stylesheet">
 
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
+        <link href="css/tooplate-barista.css" rel="stylesheet">
+        
 
-            const data = await res.json();
-            const status = document.getElementById("loginStatus");
+    </head>
+    
+    <body>
+                
+            <main>
+                <nav class="navbar navbar-expand-lg">                
+                    <div class="container">
+                        <a class="navbar-brand d-flex align-items-center" href="index.html">
+                            <img src="images/coffee-beans.png" class="navbar-brand-image img-fluid" alt="Barista Cafe Template">
+                            My Blog
+                        </a>
+        
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+        
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav ms-lg-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link click-scroll" href="index.html">Home</a>
+                                </li>
+        
+                                <li class="nav-item">
+                                    <a class="nav-link click-scroll" href="#section_2">Posts</a>
+                                </li>
 
-            if (res.ok && data.token) {
-                localStorage.setItem("token", data.token);
-                window.location.href = "dashboard.html";
-            } else {
-                status.textContent = "❌ Login failed.";
-            }
-        }
+                                <li class="nav-item">
+                                    <a class="nav-link click-scroll" href="#section_3">Categories</a>
+                                </li>
 
-        async function register(event) {
-            event.preventDefault();
-            const username = document.getElementById("registerUsername").value;
-            const password = document.getElementById("registerPassword").value;
+                                <li class="nav-item">
+                                    <a class="nav-link click-scroll" href="#section_4">Tags</a>
+                                </li>
 
-            const res = await fetch('/api/users/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
+                                
+                            </ul>
 
-            const status = document.getElementById("registerStatus");
-            const message = await res.text();
-            status.textContent = res.ok ? "✅ Registered successfully." : "❌ " + message;
-        }
+                            <div class="ms-lg-3">
+                                <a class="btn custom-btn custom-border-btn" href="#section_5">
+                                    LogIn
+                                    <i class="bi-arrow-up-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
 
-        async function loadAllPosts() {
-            const res = await fetch('/api/posts');
-            const posts = await res.json();
 
-            const postsDiv = document.getElementById("posts");
-            postsDiv.innerHTML = posts.map(post =>
-                `<article>
-                    <h3>${post.title}</h3>
-                    <p>${post.content}</p>
-                </article>`
-            ).join('');
-        }
+                <section class="hero-section d-flex justify-content-center align-items-center" id="section_1">
 
-        window.onload = loadAllPosts;
-    </script>
-</body>
+                    <div class="container">
+                        <div class="row align-items-center">
+
+                            <div class="col-lg-6 col-12 mx-auto">
+                                <em class="small-text">welcome to My Blog</em>
+                                
+                                <h1>BlogSpace</h1>
+
+                                <p class="text-white mb-4 pb-lg-2">
+                                    Write. <em>Share. </em> Inspire.
+                                </p>
+
+                                
+
+                                <a class="btn custom-btn smoothscroll me-2 mb-2" href="reservation.html"><strong>Register</strong></a>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="hero-slides"></div>
+                </section>
+ 
+
+              
+
+
+                <section class="barista-section section-padding section-bg" id="section_2"  >
+                   
+
+                     <div class="container">
+                        <div class="row justify-content-center">
+
+                            <div class="col-lg-12 col-12 text-center mb-4 pb-lg-2">
+                            
+
+                                <h2 class="text-white">Posts</h2>
+                            </div>
+
+                        
+                            
+
+                            <div class="col-lg-3 col-md-6 col-12 mb-4">
+                                <div class="team-block-wrap">
+                                    <div class="team-block-info d-flex flex-column">
+                                        <div class="d-flex mt-auto mb-3">
+                                            <h4 id="postTitle" class="text-white mb-0"></h4>
+                                        </div>
+
+                                        <p id="postContent" class="text-white mb-0"></p>
+                                    </div>
+
+                                    <div class="team-block-image-wrap">
+                                        <img id="postImage" src="" alt="" style="max-width:100%; display:none;" class="team-block-image img-fluid">
+                                    </div>
+
+                                </div>
+                                <div id="posts"></div>
+                            </div>
+                       
+                           
+                    </div>
+                    </div>
+                </section>
+
+
+                <section class="menu-section section-padding" id="section_3">
+                    <div class="container">
+                        <div class="row">
+
+                            <div class="col-lg-6 col-12 mb-4 mb-lg-0">
+                                <div class="menu-block-wrap">
+                                    <div class="text-center mb-4 pb-lg-2">
+                                        
+                                        <h4 class="text-white">Categories</h4>
+                                        
+                                    </div>
+
+                                    <div class="menu-block" >
+                                        <div class="d-flex">
+                                          <button class="btn custom-btn smoothscroll me-2 mb-2"  onclick="loadCategories()">Show all Categories</button>
+                                    </div>
+                                    <div id="categories"></div>
+                                </div>
+                            </div>
+
+                           </div>
+
+                        </div>
+                    </div>
+                </section>
+
+
+                <section class="menu-section section-padding" id="section_4">
+                    <div class="container">
+                        <div class="row">
+
+                            <div class="col-lg-6 col-12 mb-4 mb-lg-0">
+                                <div class="menu-block-wrap">
+                                    <div class="text-center mb-4 pb-lg-2">
+                                        
+                                        <h4 class="text-white">Tags</h4>
+                                    </div>
+
+                                    <div class="menu-block">
+                                        <div class="d-flex">
+                                          <button class="btn custom-btn smoothscroll me-2 mb-2" onclick="loadTags()">Show All Tags</button>
+                                        </div>
+                                        <div id="tags"></div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                           
+
+                        </div>
+                    </div>
+                </section>
+
+
+                <section class="contact-section section-padding" id="section_5">
+                    <div class="container">
+                        <div class="row">   
+
+                            <div class="col-lg-12 col-12">
+                                <em class="text-white">Say Hello</em>
+                                <h2 class="text-white mb-4 pb-lg-2">LogIn</h2>
+                            </div>
+
+                            <div class="col-lg-6 col-12">
+                            <form action="#" method="post" onsubmit="login(event)" class="custom-form contact-form" role="form">
+
+                                <div class="row">
+                                    
+                                    <div class="col-lg-6 col-12">
+                                        <label for="name" class="form-label">Name <sup class="text-danger">*</sup></label>
+
+                                        <input type="text" name="name" id="loginUsername" class="form-control" placeholder="Name" required="">
+                                    </div>
+
+                                    <div class="col-lg-6 col-12">
+                                        <label for="email" class="form-label">Password</label>
+
+                                        <input type="password" name="password" id="loginPassword"  class="form-control" placeholder="*******" required="">
+                                    </div>
+
+                                   
+                                </div>
+
+                                <div class="col-lg-5 col-12 mx-auto mt-3">
+                                    <button type="submit" class="form-control">LogIn</button>
+                                </div>
+                                <div id="loginStatus"></div>
+                            </form>
+                            </div>
+
+                          
+
+                        </div>
+                    </div>
+                </section>
+
+
+                
+            </main>
+
+        <!-- JAVASCRIPT FILES -->
+        <script src="js/jquery.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/jquery.sticky.js"></script>
+        <script src="js/click-scroll.js"></script>
+        <script src="js/vegas.min.js"></script>
+        <script src="js/custom.js"></script>
+        <script src="js/post.js"></script>
+        
+
+    </body>
 </html>
