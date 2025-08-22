@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
@@ -24,11 +23,8 @@ builder.Services.AddAuthentication("Bearer")
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
         };
     });
-
 builder.Services.AddAuthorization(options => { options.AddPolicy("Author", policy => policy.RequireRole("Author")); });
- 
 var app = builder.Build();
-
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseStaticFiles(new StaticFileOptions
@@ -37,24 +33,12 @@ app.UseStaticFiles(new StaticFileOptions
         Path.Combine(Directory.GetCurrentDirectory(), "Content")),
     RequestPath = "/Content"
 });
-
 app.UseAuthentication();
 app.UseAuthorization();
-
-
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
-app.MapCategoryEndpoints(); 
+app.MapCategoryEndpoints();
 app.MapTagEndpoints();
 app.MapSearchEndpoints();
 app.MapPostEndpoints();
-
-
-
-
-
-
 app.Run();
-
-
-
