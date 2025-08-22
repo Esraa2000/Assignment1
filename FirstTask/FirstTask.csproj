@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
   </ItemGroup>
 
@@ -33,7 +34,6 @@
     <Folder Include="Content\posts\" />
     <Folder Include="content\tags\" />
     <Folder Include="content\users\" />
-    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
