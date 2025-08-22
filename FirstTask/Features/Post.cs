@@ -14,14 +14,14 @@ namespace FirstTask.Endpoints
             app.MapGet("/api/posts/category/{categoryName}", GetPostsByCategoryAsync);
             app.MapGet("/api/posts/tag/{tagName}", GetPostsByTagAsync);
             app.MapPost("/api/posts", CreatePostAsync)
-                .RequireAuthorization("Author")
+                .RequireAuthorization("CanWrite")
                 .WithName("CreatePost").WithOpenApi();
             app.MapDelete("/api/posts/{slug}", DeletePostBySlugAsync)
-                .RequireAuthorization("Author")
+                .RequireAuthorization("CanWrite")
                 .WithName("DeletePost")
                 .WithOpenApi();
             app.MapPut("/api/posts/{slug}", UpdatePostAsync)
-                .RequireAuthorization("Author")
+                .RequireAuthorization("CanWrite")
                 .WithName("UpdatePost")
                 .WithOpenApi();
         }
@@ -42,9 +42,12 @@ namespace FirstTask.Endpoints
                                 .Select(t => t.Trim())
                                 .ToArray();
                 var published = form["published"].ToString().ToLower() == "true";
+
                 var postFolder = Path.Combine(Directory.GetCurrentDirectory(), "Content", "posts", slug);
                 if (!Directory.Exists(postFolder))
                     return Results.NotFound("Post not found.");
+
+                // تحديث meta.json
                 var metaPath = Path.Combine(postFolder, "meta.json");
                 if (!File.Exists(metaPath))
                     return Results.NotFound("Post metadata not found.");
@@ -81,13 +84,22 @@ namespace FirstTask.Endpoints
                 return Results.Problem("Error updating post: " + ex.Message);
             }
         }
-        public static async Task<IResult> DeletePostBySlugAsync(string slug)
+        public static async Task<IResult> DeletePostBySlugAsync(string slug, HttpContext context)
         {
             try
             {
+                var username = context.User?.Identity?.Name;
+                if (string.IsNullOrWhiteSpace(username))
+                    return Results.Unauthorized();
+
+                var isAdmin = context.User.IsInRole("Admin");
                 var postFolder = Path.Combine(Directory.GetCurrentDirectory(), "Content", "posts", slug);
                 if (!Directory.Exists(postFolder))
-                    return Results.NotFound("Post not found.");       
+                    return Results.NotFound("Post not found.");
+                var author = GetPostAuthor(postFolder);
+                if (!isAdmin && !string.Equals(author, username, StringComparison.OrdinalIgnoreCase))
+                    return Results.Forbid();
+
                 var metaPath = Path.Combine(postFolder, "meta.json");
                 if (!File.Exists(metaPath))
                     return Results.Problem("Metadata not found.");
@@ -150,6 +162,7 @@ namespace FirstTask.Endpoints
             {
                 if (!request.HasFormContentType)
                     return Results.BadRequest("Form content is required.");
+
                 var form = await request.ReadFormAsync();
                 var title = form["title"].ToString();
                 var content = form["content"].ToString();
@@ -189,7 +202,8 @@ namespace FirstTask.Endpoints
                     ["publishedDate"] = DateTime.UtcNow.ToString("s"),
                     ["lastModified"] = DateTime.UtcNow.ToString("s"),
                     ["status"] = published ? "published" : "draft",
-                    ["image"] = imagePath ?? ""
+                    ["image"] = imagePath ?? "",
+                    ["author"] = username
                 };
                 var metaJson = JsonSerializer.Serialize(metaData, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(Path.Combine(postFolder, "meta.json"), metaJson);
@@ -276,7 +290,10 @@ namespace FirstTask.Endpoints
             var posts = await Task.FromResult(GetAllPosts());
             if (posts.Count == 0)
                 return Results.NotFound("No posts found");
-            return Results.Ok(posts);
+
+            if (meta.TryGetValue("author", out var authorObj))
+                return authorObj?.ToString();
+            return null;
         }
         public static async Task<IResult> GetPostBySlugAsync(string slug)
         {
