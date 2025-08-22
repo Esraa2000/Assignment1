@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 Tooplate 2137 Barista
 
@@ -291,6 +291,22 @@ strong {
   transition: all 0.3s;
   padding: 12px 28px;
 }
+.transparent-card {
+    background: rgba(0,0,0,0.5); /* خلفية غامقة شفافة */
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.transparent-card h5 {
+    color: #ffffff; /* العنوان أبيض */
+    margin-bottom: 10px;
+}    
+
+.transparent-card p {
+    color: #d1d1d1; /* نص رمادي فاتح */
+    margin: 0;
+}
+
 
 .custom-btn:hover {
   background: var(--custom-btn-bg-hover-color);

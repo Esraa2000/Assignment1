@@ -1,0 +1,15 @@
+{
+  "title": "New Post",
+  "slug": "new-post",
+  "description": "",
+  "categories": [
+    "tech"
+  ],
+  "tags": [
+    "welcome"
+  ],
+  "publishedDate": "2025-08-20T11:42:01",
+  "lastModified": "2025-08-20T11:42:01",
+  "status": "draft",
+  "image": ""
+}
