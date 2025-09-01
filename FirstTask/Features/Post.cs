@@ -43,6 +43,7 @@ namespace FirstTask.Endpoints
                                 .ToArray();
                 var published = form["published"].ToString().ToLower() == "true";
 
+
                 var httpContext = request.HttpContext;
                 var username = httpContext.User?.Identity?.Name;
                 if (string.IsNullOrWhiteSpace(username))
@@ -56,6 +57,7 @@ namespace FirstTask.Endpoints
                 var author = GetPostAuthor(postFolder);
                 if (!isAdmin && !string.Equals(author, username, StringComparison.OrdinalIgnoreCase))
                     return Results.Forbid();
+
                 var metaPath = Path.Combine(postFolder, "meta.json");
                 if (!File.Exists(metaPath))
                     return Results.NotFound("Post metadata not found.");
@@ -170,10 +172,12 @@ namespace FirstTask.Endpoints
             {
                 if (!request.HasFormContentType)
                     return Results.BadRequest("Form content is required.");
+
                 var httpContext = request.HttpContext;
                 var username = httpContext.User?.Identity?.Name;
                 if (string.IsNullOrWhiteSpace(username))
                     return Results.Unauthorized();
+
                 var form = await request.ReadFormAsync();
                 var title = form["title"].ToString();
                 var content = form["content"].ToString();
@@ -301,7 +305,10 @@ namespace FirstTask.Endpoints
             var posts = await Task.FromResult(GetAllPosts());
             if (posts.Count == 0)
                 return Results.NotFound("No posts found");
-            return Results.Ok(posts);
+
+            if (meta.TryGetValue("author", out var authorObj))
+                return authorObj?.ToString();
+            return null;
         }
         private static string? GetPostAuthor(string postFolder)
         {
