@@ -6,16 +6,13 @@
         {
             app.MapGet("/api/search/{search}", HandleSearchRequest);
         }
-
         private static Task<IResult> HandleSearchRequest(string search)
         {
             if (string.IsNullOrWhiteSpace(search))
                 return Task.FromResult(Results.BadRequest("Search keyword is missing.") as IResult);
-
             var posts = Post.GetAllPosts();
             var keyword = search.ToLower();
             var matchedPosts = new List<Dictionary<string, object>>();
-
             foreach (var p in posts)
             {
                 var title = p.ContainsKey("title") ? p["title"]?.ToString()?.ToLower() : "";
@@ -29,10 +26,8 @@
                     matchedPosts.Add(p);
                 }
             }
-
             if (matchedPosts.Count == 0)
                 return Task.FromResult(Results.NotFound("No posts matched the keyword") as IResult);
-
             return Task.FromResult(Results.Ok(matchedPosts) as IResult);
         }
     }

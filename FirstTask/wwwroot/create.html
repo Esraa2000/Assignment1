@@ -4,8 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Create Post - My Blog</title>
-
-    <!-- Fonts & CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600;700&display=swap" rel="stylesheet">
@@ -16,20 +14,15 @@
 </head>
 
 <body class="reservation-page">
-
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
                 <img src="../images/coffee-beans.png" class="navbar-brand-image img-fluid" alt="">
                 My Blog
             </a>
-
             <button class="btn custom-btn custom-border-btn ms-auto" onclick="logout()">Logout</button>
         </div>
     </nav>
-
-    <!-- Main -->
     <main>
         <section class="booking-section section-padding">
             <div class="container">
@@ -38,13 +31,11 @@
                         <div class="booking-form-wrap">
                             <div class="row">
                                 <div class="col-lg-12 col-12 p-0">
-
                                     <form class="custom-form booking-form" id="createPostForm" enctype="multipart/form-data" onsubmit="createPost(event)">
                                         <div class="text-center mb-4 pb-lg-2">
                                             <em class="text-white">Write your article</em>
                                             <h2 class="text-white">✍️ Create Post</h2>
                                         </div>
-
                                         <div class="booking-form-body">
                                             <div class="row g-3">
                                                 <div class="col-12">
@@ -66,7 +57,6 @@
                                                     <input type="checkbox" class="form-check-input" id="createPublished" name="published">
                                                     <label class="form-check-label text-white" for="createPublished">Published</label>
                                                 </div>
-
                                                 <div class="col-12 text-center mt-3">
                                                     <button type="submit" class="btn btn-success">Create</button>
                                                     <a href="dashboard.html" class="btn btn-secondary">Go Back</a>
@@ -75,7 +65,6 @@
                                             <div id="createStatus" class="mt-3"></div>
                                         </div>
                                     </form>
-
                                 </div>
                             </div>
                         </div>

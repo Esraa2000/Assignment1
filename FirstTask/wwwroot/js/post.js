@@ -20,6 +20,7 @@ async function loadAllPosts() {
        <div class="col-lg-6 col-12">
          <div class="transparent-card mb-2 p-3">
            <h5 class="text-white">${p.title}</h5>
+           ${p.image ? `<img src="${p.image}" class="img-fluid rounded mb-2" style="max-height:200px; object-fit:cover;" />` : ""}        
            <div id="excerpt-${slug}" class="text-light">${excerpt}...</div>
            <div id="full-${slug}" class="text-light d-none">${p.content}</div>
            <div class="mt-2">
@@ -117,6 +118,8 @@ function filterAdminByCategory(name) {
             <div class="col-lg-6 col-12">
               <div class="transparent-card mb-2">
                 <h5>${p.title}</h5>
+                ${p.image ? `<img src="${p.image}" class="img-fluid rounded mb-2" style="max-height:200px; object-fit:cover;" />` : ""}      
+         
                 <p id="excerpt-${slug}" class="excerpt">${excerpt}...</p>
                 <div id="full-${slug}" class="full d-none">${p.content}</div>
                 <div class="mt-2 d-flex gap-2">
@@ -149,6 +152,8 @@ function filterAdminByTag(name) {
             <div class="col-lg-6 col-12">
               <div class="transparent-card mb-2">
                 <h5>${p.title}</h5>
+                 ${p.image ? `<img src="${p.image}" class="img-fluid rounded mb-2" style="max-height:200px; object-fit:cover;" />` : ""}      
+         
                 <p id="excerpt-${slug}" class="excerpt">${excerpt}...</p>
                 <div id="full-${slug}" class="full d-none">${p.content}</div>
                 <div class="mt-2 d-flex gap-2">
@@ -176,6 +181,8 @@ function displayPosts(posts) {
         <div class="col-12 d-flex justify-content-center">
             <div  style="max-width:600px; text-align:center;">
                 <h5 class="text-white">${p.title || p.Title}</h5>
+                 ${p.image ? `<img src="${p.image}" class="img-fluid rounded mb-2" style="max-height:200px; object-fit:cover;" />` : ""}        
+         
                 <div class="text-light">${p.content || p.Content}</div>
             </div>
         </div>`;
@@ -474,7 +481,8 @@ async function loadAdminPosts() {
                 <div class="col-lg-6 col-12">
                   <div class="transparent-card mb-2">
                     <h5>${p.title}</h5>
-
+                     ${p.image ? `<img src="${p.image}" class="img-fluid rounded mb-2" style="max-height:200px; object-fit:cover;" />` : ""}      
+         
                     <p id="excerpt-${slug}" class="excerpt">${excerpt}...</p>
                     <div id="full-${slug}" class="full d-none">${p.content}</div>
 

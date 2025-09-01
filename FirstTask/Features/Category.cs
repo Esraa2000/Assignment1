@@ -11,13 +11,10 @@ namespace FirstTask.Endpoints
         private static IResult GetAllCategories(HttpContext context)
         {
             var categoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Content", "categories");
-
             if (!Directory.Exists(categoryPath))
                 return Results.NotFound("Categories folder not found.");
-
             var categoryFiles = Directory.GetFiles(categoryPath, "*.json");
             var categories = new List<Dictionary<string, object>>();
-
             foreach (var file in categoryFiles)
             {
                 var json = File.ReadAllText(file);
@@ -27,10 +24,7 @@ namespace FirstTask.Endpoints
                     categories.Add(category);
                 }
             }
-
             return Results.Ok(categories);
         }
-
-
     }
 }
