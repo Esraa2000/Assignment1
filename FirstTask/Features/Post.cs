@@ -43,11 +43,21 @@ namespace FirstTask.Endpoints
                                 .ToArray();
                 var published = form["published"].ToString().ToLower() == "true";
 
+
+                var httpContext = request.HttpContext;
+                var username = httpContext.User?.Identity?.Name;
+                if (string.IsNullOrWhiteSpace(username))
+                    return Results.Unauthorized();
+
+                var isAdmin = httpContext.User.IsInRole("Admin");
+
                 var postFolder = Path.Combine(Directory.GetCurrentDirectory(), "Content", "posts", slug);
                 if (!Directory.Exists(postFolder))
                     return Results.NotFound("Post not found.");
+                var author = GetPostAuthor(postFolder);
+                if (!isAdmin && !string.Equals(author, username, StringComparison.OrdinalIgnoreCase))
+                    return Results.Forbid();
 
-                // تحديث meta.json
                 var metaPath = Path.Combine(postFolder, "meta.json");
                 if (!File.Exists(metaPath))
                     return Results.NotFound("Post metadata not found.");
@@ -162,6 +172,11 @@ namespace FirstTask.Endpoints
             {
                 if (!request.HasFormContentType)
                     return Results.BadRequest("Form content is required.");
+
+                var httpContext = request.HttpContext;
+                var username = httpContext.User?.Identity?.Name;
+                if (string.IsNullOrWhiteSpace(username))
+                    return Results.Unauthorized();
 
                 var form = await request.ReadFormAsync();
                 var title = form["title"].ToString();
@@ -290,6 +305,19 @@ namespace FirstTask.Endpoints
             var posts = await Task.FromResult(GetAllPosts());
             if (posts.Count == 0)
                 return Results.NotFound("No posts found");
+
+            if (meta.TryGetValue("author", out var authorObj))
+                return authorObj?.ToString();
+            return null;
+        }
+        private static string? GetPostAuthor(string postFolder)
+        {
+            var metaPath = Path.Combine(postFolder, "meta.json");
+            if (!File.Exists(metaPath)) return null;
+
+            var metaJson = File.ReadAllText(metaPath);
+            var meta = JsonSerializer.Deserialize<Dictionary<string, object>>(metaJson);
+            if (meta == null) return null;
 
             if (meta.TryGetValue("author", out var authorObj))
                 return authorObj?.ToString();

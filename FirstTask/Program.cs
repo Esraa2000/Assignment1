@@ -8,7 +8,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
@@ -23,7 +22,11 @@ builder.Services.AddAuthentication("Bearer")
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
         };
     });
-builder.Services.AddAuthorization(options => { options.AddPolicy("Author", policy => policy.RequireRole("Author")); });
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("CanWrite", policy =>
+        policy.RequireRole("Admin", "Editor", "Author"));
+}); 
 var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();
